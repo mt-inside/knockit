@@ -1,0 +1,13 @@
+﻿<Window x:Class="knockit.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="416" Width="685" xmlns:my="clr-namespace:knockit">
+    <Grid>
+        <ListBox Height="107" HorizontalAlignment="Left" Margin="411,12,0,0" Name="listBox1" VerticalAlignment="Top" Width="240" SelectionChanged="listBox1_SelectionChanged" />
+        <ProgressBar Height="15" HorizontalAlignment="Left" Margin="12,269,0,0" Name="progressBar_Volume" VerticalAlignment="Top" Width="315"/>
+        <Slider Height="23" HorizontalAlignment="Left" Margin="12,290,0,0" Name="slider1" VerticalAlignment="Top" Width="315" />
+        <my:PolygonWaveFormControl HorizontalAlignment="Left" Margin="12,12,0,0" x:Name="polygonWaveFormControl1" VerticalAlignment="Top" Height="92" Width="315" />
+        <my:PolygonSpectrumControl HorizontalAlignment="Left" Margin="12,110,0,0" x:Name="polygonSpectrumControl1" VerticalAlignment="Top" Height="153" Width="315" />
+        <Label Content="Label" Height="28" HorizontalAlignment="Left" Margin="353,210,0,0" Name="label1" VerticalAlignment="Top" Width="122" />
+    </Grid>
+</Window>
