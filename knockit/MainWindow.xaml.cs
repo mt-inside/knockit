@@ -7,6 +7,40 @@ using NAudio.Wave.SampleProviders;
 
 namespace knockit
 {
+    public static class FFTHelper
+    {
+        public static double[] fft(double[] samples)
+        {
+            Func<int, int, double> window_fn = FastFourierTransform.HammingWindow;
+                Complex[] fftData = new Complex[samples.Length];
+                for (int i = 0; i < samples.Length; ++i)
+                {
+                    fftData[i].X = (float) (samples[i] * window_fn(i, samples.Length));
+                    fftData[i].Y = 0;
+                }
+                /* in-place, forwards fft.
+                 * Input is a sequence of complex numbers with sample amplitude in the real part and a 0 imaginary part.
+                 * Output is a sequence of complex numbers, whose modulus is the amplitude at that frequency.
+                 * Outputs range in frequency from 0 to sample rate
+                 */
+                FastFourierTransform.FFT(true, (int) Math.Log(fftData.Length, 2), fftData);
+                /* TODO: chop this to samplerate / 2 here, as anything over that is just mirrored bollocks, and it's pointless wasteing cpu */
+                double[] freqDomain = new double[fftData.Length / 2];
+                double max = 0f; int freqMax = 0;
+                for (int i = 0; i < fftData.Length / 2; ++i )
+                {
+                    double amplitudeDB = 10 * Math.Log(Math.Sqrt(fftData[i].X * fftData[i].X + fftData[i].Y * fftData[i].Y));
+                    const double minAmplitude = -96; //dB
+                    if (amplitudeDB < minAmplitude) amplitudeDB = minAmplitude;
+                    freqDomain[i] = 1.0 - amplitudeDB/minAmplitude;
+                    if (freqDomain[i] > max)
+                    {
+                        max = freqDomain[i];
+                        freqMax = i;
+                    }
+                }
+        }
+    }
     public class Recorder
     {
         private readonly int _sampleRate;
@@ -119,35 +153,8 @@ namespace knockit
             if ((m_FftIndex == m_FftWindow.Length))
             {
                 m_FftIndex = 0;
-                Func<int, int, double> window_fn = FastFourierTransform.HammingWindow;
-                Complex[] fftData = new Complex[m_FftWindow.Length];
-                for (int i = 0; i < m_FftWindow.Length; ++i)
-                {
-                    fftData[i].X = (float) (m_FftWindow[i] * window_fn(i, m_FftWindow.Length));
-                    fftData[i].Y = 0;
-                }
-                /* in-place, forwards fft.
-                 * Input is a sequence of complex numbers with sample amplitude in the real part and a 0 imaginary part.
-                 * Output is a sequence of complex numbers, whose modulus is the amplitude at that frequency.
-                 * Outputs range in frequency from 0 to sample rate
-                 */
-                FastFourierTransform.FFT(true, (int) Math.Log(fftData.Length, 2), fftData);
-                /* TODO: chop this to samplerate / 2 here, as anything over that is just mirrored bollocks, and it's pointless wasteing cpu */
-                double[] freqDomain = new double[fftData.Length / 2];
-                double max = 0f; int freqMax = 0;
-                for (int i = 0; i < fftData.Length / 2; ++i )
-                {
-                    double amplitudeDB = 10 * Math.Log(Math.Sqrt(fftData[i].X * fftData[i].X + fftData[i].Y * fftData[i].Y));
-                    const double minAmplitude = -96; //dB
-                    if (amplitudeDB < minAmplitude) amplitudeDB = minAmplitude;
-                    freqDomain[i] = 1.0 - amplitudeDB/minAmplitude;
-                    if (freqDomain[i] > max)
-                    {
-                        max = freqDomain[i];
-                        freqMax = i;
-                    }
-                }
 
+                double[] freqDomain = FFTHelper.fft((double[]) m_FftWindow);
 
                 /*  */
                 float binBandwith = (float)_sampleRate/fftData.Length;
@@ -197,11 +204,12 @@ namespace knockit
 
             m_WaveIn = new WaveIn
             {
-                DeviceNumber = 0,
+                DeviceNumber = 2,
                 WaveFormat = new WaveFormat(m_Recorder.SampleRate, 16, 1)
             };
             IWaveProvider foo = new WaveInProvider(m_WaveIn);
-            ISampleProvider sampleChannel = new SampleChannel(foo);
+            IWaveProvider bandpass = new BandPassProvider(foo);
+            ISampleProvider sampleChannel = new SampleChannel(bandpass);
             //ISampleProvider sampleChannel = new SampleChannel(new WaveFileReader(@"c:\Users\user\Desktop\0-24000.wav"));
             NotifyingSampleProvider sampleStream = new NotifyingSampleProvider(sampleChannel);
             sampleStream.Sample +=sampleStream_Sample;
@@ -230,6 +238,20 @@ namespace knockit
         // RawSourceWaveStream could be useful (just echos a normal stream)
 
 
+        /* something like:
+         *                 while (connected)
+                {
+                    byte[] b = this.udpListener.Receive(ref endPoint);
+                    byte[] decoded = listenerThreadState.Codec.Decode(b, 0, b.Length);
+                    waveProvider.AddSamples(decoded, 0, decoded.Length);
+                }
+         */
+
+        /* need to see what blocksize Read() gets called with, and what an fft on such a small smaple does.
+         * - see how altering waveout's desired latency effects this.
+         * INetworkCodec is a nice way to wrap up a codec, but doesn't do anything clever like block
+         */
+
         void m_Recorder_NewVolumeEvent(object sender, Recorder.NewVolumeEventArgs e)
         {
             progressBar_Volume.Value = e.NormalisedVolume*100;
@@ -248,6 +270,27 @@ namespace knockit
                 /* TODO: don't think this is working */
                 m_WaveIn.DeviceNumber = me.SelectedIndex;
             }
+        }
+    }
+
+    public class BandPassProvider : IWaveProvider
+    {
+        private readonly IWaveProvider _src;
+
+        public BandPassProvider(IWaveProvider src)
+        {
+            _src = src;
+        }
+
+        public int Read(byte[] buffer, int offset, int count)
+        {
+            MessageBox.Show(count.ToString());
+            return _src.Read(buffer, offset, count);
+        }
+
+        public WaveFormat WaveFormat
+        {
+            get { return _src.WaveFormat; }
         }
     }
 }
