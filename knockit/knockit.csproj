@@ -58,6 +58,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Recorder.cs" />
     <Page Include="PolygonSpectrumControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -70,6 +71,8 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="BandPassProvider.cs" />
+    <Compile Include="FFTHelper.cs" />
     <Compile Include="PolygonSpectrumControl.xaml.cs">
       <DependentUpon>PolygonSpectrumControl.xaml</DependentUpon>
     </Compile>

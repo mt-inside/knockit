@@ -1,182 +1,11 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
-using NAudio.Dsp;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 
 namespace knockit
 {
-    public static class FFTHelper
-    {
-        public static double[] fft(double[] samples)
-        {
-            Func<int, int, double> window_fn = FastFourierTransform.HammingWindow;
-                Complex[] fftData = new Complex[samples.Length];
-                for (int i = 0; i < samples.Length; ++i)
-                {
-                    fftData[i].X = (float) (samples[i] * window_fn(i, samples.Length));
-                    fftData[i].Y = 0;
-                }
-                /* in-place, forwards fft.
-                 * Input is a sequence of complex numbers with sample amplitude in the real part and a 0 imaginary part.
-                 * Output is a sequence of complex numbers, whose modulus is the amplitude at that frequency.
-                 * Outputs range in frequency from 0 to sample rate
-                 */
-                FastFourierTransform.FFT(true, (int) Math.Log(fftData.Length, 2), fftData);
-                /* TODO: chop this to samplerate / 2 here, as anything over that is just mirrored bollocks, and it's pointless wasteing cpu */
-                double[] freqDomain = new double[fftData.Length / 2];
-                double max = 0f; int freqMax = 0;
-                for (int i = 0; i < fftData.Length / 2; ++i )
-                {
-                    double amplitudeDB = 10 * Math.Log(Math.Sqrt(fftData[i].X * fftData[i].X + fftData[i].Y * fftData[i].Y));
-                    const double minAmplitude = -96; //dB
-                    if (amplitudeDB < minAmplitude) amplitudeDB = minAmplitude;
-                    freqDomain[i] = 1.0 - amplitudeDB/minAmplitude;
-                    if (freqDomain[i] > max)
-                    {
-                        max = freqDomain[i];
-                        freqMax = i;
-                    }
-                }
-        }
-    }
-    public class Recorder
-    {
-        private readonly int _sampleRate;
-        private long m_SampleCount;
-
-        public class NewVolumeEventArgs : EventArgs
-        {
-            private readonly float _normalisedVolume;
-
-            public NewVolumeEventArgs(float normalisedVolume)
-            {
-                _normalisedVolume = normalisedVolume;
-            }
-
-            public float NormalisedVolume
-            {
-                get { return _normalisedVolume; }
-            }
-        }
-
-        public class NewWaveformSampleEventArgs : EventArgs
-        {
-            private readonly float _max;
-            private readonly float _min;
-
-            public NewWaveformSampleEventArgs(float max, float min)
-            {
-                _max = max;
-                _min = min;
-            }
-
-            public float Max
-            {
-                get { return _max; }
-            }
-
-            public float Min
-            {
-                get { return _min; }
-            }
-        }
-
-        public class NewFFTDataEventArgs : EventArgs
-        {
-            private readonly double[] _fft;
-
-            public NewFFTDataEventArgs(double[] fft)
-            {
-                _fft = fft;
-            }
-
-            public double[] Fft
-            {
-                /* normalised to [0-1] */
-                get { return _fft; }
-            }
-        }
-         public class NewPrimaryFrequencyEventArgs : EventArgs
-         {
-             private readonly int _primaryFrequency;
-
-             public NewPrimaryFrequencyEventArgs(int primaryFrequency)
-             {
-                 _primaryFrequency = primaryFrequency;
-             }
-
-             public int PrimaryFrequency
-             {
-                 get { return _primaryFrequency; }
-             }
-         }
-
-        public event EventHandler<NewVolumeEventArgs> NewVolumeEvent;
-        public event EventHandler<NewWaveformSampleEventArgs> NewWaveformSampleEvent;
-        public event EventHandler<NewFFTDataEventArgs> NewFFTDataEvent;
-        public event EventHandler<NewPrimaryFrequencyEventArgs> NewPrimaryFrequencyEvent;
-
-        private float[] m_FftWindow = new float[1024];
-        private int m_FftIndex = 0;
-
-        public Recorder(int sampleRate)
-        {
-            _sampleRate = sampleRate;
-        }
-
-        public int SampleRate
-        {
-            get { return _sampleRate; }
-        }
-
-        public void Update(float sample)
-        {
-            m_SampleCount++;
-
-            m_FftWindow[m_FftIndex++] = sample;
-
-            if ((m_SampleCount % 4800) == 0)
-            {
-                /* TODO: update with max of the last peroid */
-                RaiseEvent(new NewVolumeEventArgs(sample), NewVolumeEvent);
-                /* wat should these values be? */
-                RaiseEvent(new NewWaveformSampleEventArgs(-sample, sample), NewWaveformSampleEvent);
-            }
-
-            if ((m_SampleCount % 4800) == 0)
-            {
-                
-            }
-
-            if ((m_FftIndex == m_FftWindow.Length))
-            {
-                m_FftIndex = 0;
-
-                double[] freqDomain = FFTHelper.fft((double[]) m_FftWindow);
-
-                /*  */
-                float binBandwith = (float)_sampleRate/fftData.Length;
-                int firstBin = 0;
-                int lastBin = (int) (5000/binBandwith);
-                //RaiseEvent(new NewFFTDataEventArgs(freqDomain.Skip(firstBin).Take(lastBin).ToArray()), NewFFTDataEvent);
-                RaiseEvent(new NewFFTDataEventArgs(freqDomain), NewFFTDataEvent);
-
-                RaiseEvent(new NewPrimaryFrequencyEventArgs((int) (freqMax*binBandwith)), NewPrimaryFrequencyEvent);
-            }
-        }
-
-        private void RaiseEvent<T>(T eventArgs, EventHandler<T> handler)
-            where T : EventArgs
-        {
-            if (handler != null)
-            {
-                handler(this, eventArgs);
-            }
-        }
-    }
-
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -204,20 +33,21 @@ namespace knockit
 
             m_WaveIn = new WaveIn
             {
-                DeviceNumber = 2,
+                DeviceNumber = 0,
                 WaveFormat = new WaveFormat(m_Recorder.SampleRate, 16, 1)
             };
+            
             IWaveProvider foo = new WaveInProvider(m_WaveIn);
-            IWaveProvider bandpass = new BandPassProvider(foo);
-            ISampleProvider sampleChannel = new SampleChannel(bandpass);
-            //ISampleProvider sampleChannel = new SampleChannel(new WaveFileReader(@"c:\Users\user\Desktop\0-24000.wav"));
-            NotifyingSampleProvider sampleStream = new NotifyingSampleProvider(sampleChannel);
+            ISampleProvider sampleChannel = new SampleChannel(foo);
+            ISampleProvider bandpass = new BandPassProvider(sampleChannel);
+            NotifyingSampleProvider sampleStream = new NotifyingSampleProvider(bandpass);
+
             sampleStream.Sample +=sampleStream_Sample;
             m_WaveIn.StartRecording();
 
             m_WaveOut = new WaveOut
                             {
-                                Volume = 0
+                                Volume = 1
                             };
             m_WaveOut.Init(new SampleToWaveProvider(sampleStream));
             m_WaveOut.Play();
@@ -270,27 +100,6 @@ namespace knockit
                 /* TODO: don't think this is working */
                 m_WaveIn.DeviceNumber = me.SelectedIndex;
             }
-        }
-    }
-
-    public class BandPassProvider : IWaveProvider
-    {
-        private readonly IWaveProvider _src;
-
-        public BandPassProvider(IWaveProvider src)
-        {
-            _src = src;
-        }
-
-        public int Read(byte[] buffer, int offset, int count)
-        {
-            MessageBox.Show(count.ToString());
-            return _src.Read(buffer, offset, count);
-        }
-
-        public WaveFormat WaveFormat
-        {
-            get { return _src.WaveFormat; }
         }
     }
 }
