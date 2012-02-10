@@ -11,7 +11,11 @@ namespace knockit
             //Debug.Assert((samples.Length & (samples.Length - 1)) == 0);
             //FIXME: what happens if I pass non power of 2??
 
+#if false
             Func<int, int, double> window_fn = FastFourierTransform.HammingWindow;
+#else
+            Func<int, int, double> window_fn = (a, b) => 1;
+#endif
 
             Complex[] fftData = new Complex[samples.Length];
             for (int i = 0; i < samples.Length; ++i)
@@ -30,17 +34,17 @@ namespace knockit
             return fftData;
         }
 
-        public static double[] ComplexToAmplitude(Complex[] fftData, int count)
+        public static float[] ComplexToAmplitude(Complex[] fftData, int count)
         {
-            double[] freqDomain = new double[count];
-            //double max = 0f; int freqMax = 0;
+            float[] freqDomain = new float[count];
+            //float max = 0f; int freqMax = 0;
 
             for (int i = 0; i < count; ++i)
             {
-                double amplitudeDB = 10 * Math.Log(Math.Sqrt(fftData[i].X * fftData[i].X + fftData[i].Y * fftData[i].Y));
-                const double minAmplitude = -96; //dB
+                float amplitudeDB = (float) (10 * Math.Log(Math.Sqrt(fftData[i].X * fftData[i].X + fftData[i].Y * fftData[i].Y)));
+                const float minAmplitude = -96; //dB
                 if (amplitudeDB < minAmplitude) amplitudeDB = minAmplitude;
-                freqDomain[i] = 1.0 - amplitudeDB / minAmplitude;
+                freqDomain[i] = 1.0f - amplitudeDB / minAmplitude;
                 /*if (freqDomain[i] > max)
                 {
                     max = freqDomain[i];
@@ -64,7 +68,7 @@ namespace knockit
             for(int i = 0; i < frequencyDomain.Length; ++i)
             {
                 timeDomain[i] = frequencyDomain[i].X;
-                Debug.Assert(frequencyDomain[i].Y == 0);
+                //Debug.Assert(frequencyDomain[i].Y == 0);
             }
 
             return timeDomain;

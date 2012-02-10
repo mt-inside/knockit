@@ -20,9 +20,9 @@ namespace knockit
         }
 
         private int renderPosition;
-        private double yTranslate = 40;
-        private double yScale = 40;
-        private double xScale = 2;
+        private float yTranslate = 40;
+        private float yScale = 40;
+        private float xScale = 2;
         private int blankZone = 10;
 
         Polygon waveForm = new Polygon();
@@ -51,8 +51,8 @@ namespace knockit
             renderPosition = 0;
             ClearAllPoints();
 
-            yTranslate = ActualHeight / 2;
-            yScale = ActualHeight / 2;
+            yTranslate = (float) (ActualHeight / 2);
+            yScale = (float) (ActualHeight / 2);
         }
 
         private void ClearAllPoints()
@@ -79,7 +79,7 @@ namespace knockit
                 int erasePosition = (renderPosition + blankZone) % visiblePixels;
                 if (erasePosition < Points)
                 {
-                    double yPos = SampleToYPosition(0);
+                    float yPos = SampleToYPosition(0);
                     waveForm.Points[erasePosition] = new Point(erasePosition * xScale, yPos);
                     waveForm.Points[BottomPointIndex(erasePosition)] = new Point(erasePosition * xScale, yPos);
                 }
@@ -91,16 +91,16 @@ namespace knockit
             return waveForm.Points.Count - position - 1;
         }
 
-        private double SampleToYPosition(float value)
+        private float SampleToYPosition(float value)
         {
             return yTranslate + value * yScale;
         }
 
         private void CreatePoint(float topValue, float bottomValue)
         {
-            double topYPos = SampleToYPosition(topValue);
-            double bottomYPos = SampleToYPosition(bottomValue);
-            double xPos = renderPosition * xScale;
+            float topYPos = SampleToYPosition(topValue);
+            float bottomYPos = SampleToYPosition(bottomValue);
+            float xPos = renderPosition * xScale;
             if (renderPosition >= Points)
             {
                 int insertPos = Points;

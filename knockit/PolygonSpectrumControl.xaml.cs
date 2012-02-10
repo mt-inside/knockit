@@ -1,4 +1,5 @@
-﻿using System.Windows.Controls;
+﻿using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
@@ -31,11 +32,12 @@ namespace knockit
             }
         }
 
-        private void DrawFFT(double[] fft /* normalised to [0-1] */)
+#if false
+        private void DrawFFT(float[] fft /* normalised to [0-1] */)
         {
             const int barWidth = 1;
             int barCount = (int)ActualWidth/barWidth;
-            double[] bars = new double[barCount];
+            float[] bars = new float[barCount];
 
             for(int i = 0; i < barCount; ++i)
             {
@@ -61,6 +63,34 @@ namespace knockit
                 Canvas.SetLeft(rect, i * barWidth);
                 Canvas.SetTop(rect, ActualHeight - rect.Height);
                 mainCanvas.Children.Add(rect);
+            }
+        }
+#endif
+
+        private void DrawFFT(float[] fft /* normalised */)
+        {
+            const int pointSpacing = 1;
+            int pointCOunt = (int) ActualWidth/pointSpacing;
+
+            for(int i = 0; i < pointCOunt; ++i)
+            {
+                float point = 0;
+                int lowerBin = (int) (((float) i/pointCOunt)*fft.Length);
+                int upperBin = (int) (((float) (i + 1)/pointCOunt)*fft.Length);
+                for(int j = lowerBin; j < upperBin; ++j)
+                {
+                    point += fft[j];
+                }
+                point /= (upperBin - lowerBin);
+                Point p = new Point(i * pointSpacing, ActualHeight - (point * ActualHeight));
+                if(i >= polylineSpectrum.Points.Count)
+                {
+                    polylineSpectrum.Points.Add(p);
+                }
+                else
+                {
+                    polylineSpectrum.Points[i] = p;
+                }
             }
         }
     }

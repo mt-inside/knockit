@@ -11,9 +11,12 @@ namespace knockit
     /// </summary>
     public partial class MainWindow : Window
     {
+        private const int c_SampleRate = 48000;
+        private const int c_MaxFrequency = c_SampleRate/2;
         private WaveIn m_WaveIn;
-        private Recorder m_Recorder = new Recorder(48000);
+        private Recorder m_Recorder = new Recorder(c_SampleRate);
         private WaveOut m_WaveOut;
+        private readonly BandPassProvider _bandPassProvider;
 
         public MainWindow()
         {
@@ -33,25 +36,33 @@ namespace knockit
 
             m_WaveIn = new WaveIn
             {
-                DeviceNumber = 0,
+                DeviceNumber = 2,
                 WaveFormat = new WaveFormat(m_Recorder.SampleRate, 16, 1)
             };
             
-            IWaveProvider foo = new WaveInProvider(m_WaveIn);
-            ISampleProvider sampleChannel = new SampleChannel(foo);
-            ISampleProvider bandpass = new BandPassProvider(sampleChannel);
-            NotifyingSampleProvider sampleStream = new NotifyingSampleProvider(bandpass);
+            IWaveProvider waveInWaveProvider = new WaveInProvider(m_WaveIn);
+            ISampleProvider sampleChannel = new SampleChannel(waveInWaveProvider);
+            //ISampleProvider bandpass = new BandPassProvider(sampleChannel, 1000f / c_MaxFrequency, 2000f / c_MaxFrequency);
+            _bandPassProvider = new BandPassProvider(sampleChannel);
+            NotifyingSampleProvider sampleStream = new NotifyingSampleProvider(_bandPassProvider);
 
             sampleStream.Sample +=sampleStream_Sample;
             m_WaveIn.StartRecording();
 
             m_WaveOut = new WaveOut
                             {
-                                Volume = 1
+                                Volume = 0
                             };
             m_WaveOut.Init(new SampleToWaveProvider(sampleStream));
             m_WaveOut.Play();
             // TODO: dispose of these, close, etc
+
+            sliderMinFreq.ValueChanged += SliderMinFreqValueChanged;
+            sliderMaxFreq.ValueChanged += SliderMaxFreqValueChanged;
+            SliderMinFreqValueChanged(sliderMinFreq, new RoutedPropertyChangedEventArgs<double>(0,0));
+            SliderMaxFreqValueChanged(sliderMaxFreq, new RoutedPropertyChangedEventArgs<double>(1,1));
+
+
         }
 
         private void sampleStream_Sample(object sender, SampleEventArgs e)
@@ -100,6 +111,22 @@ namespace knockit
                 /* TODO: don't think this is working */
                 m_WaveIn.DeviceNumber = me.SelectedIndex;
             }
+        }
+
+        private void SliderMinFreqValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (sliderMaxFreq.Value < e.NewValue) sliderMaxFreq.Value = e.NewValue;
+            _bandPassProvider.MinFreqNormalised = (float) e.NewValue;
+
+            labelMinFreq.Content = Math.Round(c_MaxFrequency*e.NewValue);
+        }
+
+        private void SliderMaxFreqValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (sliderMinFreq.Value > e.NewValue) sliderMinFreq.Value = e.NewValue;
+            _bandPassProvider.MaxFreqNormalised = (float) e.NewValue;
+
+            labelMaxFreq.Content = Math.Round(c_MaxFrequency*e.NewValue);
         }
     }
 }

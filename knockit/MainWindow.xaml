@@ -1,13 +1,18 @@
 ﻿<Window x:Class="knockit.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="416" Width="685" xmlns:my="clr-namespace:knockit">
+        Title="MainWindow" Height="416" Width="789" xmlns:my="clr-namespace:knockit">
     <Grid>
-        <ListBox Height="107" HorizontalAlignment="Left" Margin="411,12,0,0" Name="listBox1" VerticalAlignment="Top" Width="240" SelectionChanged="listBox1_SelectionChanged" />
-        <ProgressBar Height="15" HorizontalAlignment="Left" Margin="12,269,0,0" Name="progressBar_Volume" VerticalAlignment="Top" Width="315"/>
-        <Slider Height="23" HorizontalAlignment="Left" Margin="12,290,0,0" Name="slider1" VerticalAlignment="Top" Width="315" />
-        <my:PolygonWaveFormControl HorizontalAlignment="Left" Margin="12,12,0,0" x:Name="polygonWaveFormControl1" VerticalAlignment="Top" Height="92" Width="315" />
-        <my:PolygonSpectrumControl HorizontalAlignment="Left" Margin="12,110,0,0" x:Name="polygonSpectrumControl1" VerticalAlignment="Top" Height="153" Width="315" />
-        <Label Content="Label" Height="28" HorizontalAlignment="Left" Margin="353,210,0,0" Name="label1" VerticalAlignment="Top" Width="122" />
+        <ListBox Height="107" HorizontalAlignment="Right" Margin="0,12,12,0" Name="listBox1" VerticalAlignment="Top" Width="315" SelectionChanged="listBox1_SelectionChanged" />
+        <ProgressBar Height="15" HorizontalAlignment="Right" Margin="0,223,12,0" Name="progressBar_Volume" VerticalAlignment="Top" Width="315"/>
+        <Slider Height="23" HorizontalAlignment="Right" Margin="0,244,12,0" Name="slider1" VerticalAlignment="Top" Width="315" />
+        <my:PolygonWaveFormControl HorizontalAlignment="Right" Margin="0,125,12,0" x:Name="polygonWaveFormControl1" VerticalAlignment="Top" Height="92" Width="315" />
+        <my:PolygonSpectrumControl HorizontalAlignment="Left" Margin="12,125,0,160" x:Name="polygonSpectrumControl1" Width="315" />
+        <Label Content="Label" Height="28" HorizontalAlignment="Left" Margin="126,91,0,0" Name="label1" VerticalAlignment="Top" Width="122" />
+        <Label Content="Primary Frequency" Height="28" HorizontalAlignment="Left" Margin="12,91,0,0" Name="label2" VerticalAlignment="Top" />
+        <Slider HorizontalAlignment="Left" Margin="12,0,0,102" Name="sliderMaxFreq" Width="315" Height="23" VerticalAlignment="Bottom" Value="1" Maximum="1" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="12,0,0,131" Name="sliderMinFreq" VerticalAlignment="Bottom" Width="315" Maximum="1" />
+        <Label Content="Label" Height="28" HorizontalAlignment="Left" Margin="333,218,0,0" Name="labelMinFreq" VerticalAlignment="Top" />
+        <Label Content="Label" Height="28" HorizontalAlignment="Left" Margin="333,247,0,0" Name="labelMaxFreq" VerticalAlignment="Top" />
     </Grid>
 </Window>

@@ -1,4 +1,5 @@
 using System;
+using NAudio.Dsp;
 
 namespace knockit
 {
@@ -46,14 +47,14 @@ namespace knockit
 
         public class NewFFTDataEventArgs : EventArgs
         {
-            private readonly double[] _fft;
+            private readonly float[] _fft;
 
-            public NewFFTDataEventArgs(double[] fft)
+            public NewFFTDataEventArgs(float[] fft)
             {
                 _fft = fft;
             }
 
-            public double[] Fft
+            public float[] Fft
             {
                 /* normalised to [0-1] */
                 get { return _fft; }
@@ -92,37 +93,38 @@ namespace knockit
             get { return _sampleRate; }
         }
 
+        private float _minSample = 0;
+        private float _maxSample = 0;
         public void Update(float sample)
         {
             m_SampleCount++;
 
+            _minSample = Math.Min(_minSample, sample);
+            _maxSample = Math.Max(_maxSample, sample);
             m_FftWindow[m_FftIndex++] = sample;
 
             if ((m_SampleCount % 4800) == 0)
             {
                 /* TODO: update with max of the last peroid */
-                RaiseEvent(new NewVolumeEventArgs(sample), NewVolumeEvent);
+                RaiseEvent(new NewVolumeEventArgs(Math.Max(-_minSample, _maxSample)), NewVolumeEvent);
                 /* wat should these values be? */
-                RaiseEvent(new NewWaveformSampleEventArgs(-sample, sample), NewWaveformSampleEvent);
-            }
+                RaiseEvent(new NewWaveformSampleEventArgs(_minSample, _maxSample), NewWaveformSampleEvent);
 
-            if ((m_SampleCount % 4800) == 0)
-            {
-                
+                _minSample = _maxSample = 0;
             }
 
             if ((m_FftIndex == m_FftWindow.Length))
             {
                 m_FftIndex = 0;
 
-                //double[] freqDomain = FFTHelper.fft(m_FftWindow);
+                Complex[] fftResult = FFTHelper.FFT(m_FftWindow);
+                float[] freqDomain = FFTHelper.ComplexToAmplitude(fftResult, fftResult.Length / 2);
 
                 /*  */
                 float binBandwith = (float)_sampleRate/m_FftWindow.Length;
                 int firstBin = 0;
                 int lastBin = (int) (5000/binBandwith);
-                //RaiseEvent(new NewFFTDataEventArgs(freqDomain.Skip(firstBin).Take(lastBin).ToArray()), NewFFTDataEvent);
-                //RaiseEvent(new NewFFTDataEventArgs(freqDomain), NewFFTDataEvent);
+                RaiseEvent(new NewFFTDataEventArgs(freqDomain), NewFFTDataEvent);
 
                 // TODO: fft helper to raise struct with max etc in.
                 //RaiseEvent(new NewPrimaryFrequencyEventArgs((int) (freqMax*binBandwith)), NewPrimaryFrequencyEvent);

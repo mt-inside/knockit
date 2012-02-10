@@ -3,6 +3,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
      Foreground="Black">
     <Canvas x:Name="mainCanvas">
-
+        <Polyline x:Name="polylineSpectrum" Stroke="Black" StrokeThickness="1"/>
     </Canvas>
 </UserControl>
