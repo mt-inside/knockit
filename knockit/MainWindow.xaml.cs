@@ -22,27 +22,18 @@ namespace knockit
         {
             InitializeComponent();
 
-            polygonWaveFormControl1.Recorder = m_Recorder; // pass this to the ctor
             polygonSpectrumControl1.Recorder = m_Recorder;
 
-            for (int i = 0; i < WaveIn.DeviceCount; ++i)
-            {
-                var caps = WaveIn.GetCapabilities(i);
-                listBox1.Items.Add(String.Format("name {0} channels {1}", caps.ProductName, caps.Channels));
-            }
-
-            m_Recorder.NewVolumeEvent += m_Recorder_NewVolumeEvent;
             m_Recorder.NewPrimaryFrequencyEvent += m_Recorder_NewPrimaryFrequencyEvent;
 
             m_WaveIn = new WaveIn
             {
-                DeviceNumber = 2,
+                DeviceNumber = 0,
                 WaveFormat = new WaveFormat(m_Recorder.SampleRate, 16, 1)
             };
             
             IWaveProvider waveInWaveProvider = new WaveInProvider(m_WaveIn);
             ISampleProvider sampleChannel = new SampleChannel(waveInWaveProvider);
-            //ISampleProvider bandpass = new BandPassProvider(sampleChannel, 1000f / c_MaxFrequency, 2000f / c_MaxFrequency);
             _bandPassProvider = new BandPass2(sampleChannel);
             NotifyingSampleProvider sampleStream = new NotifyingSampleProvider(_bandPassProvider);
 
@@ -71,34 +62,6 @@ namespace knockit
             m_Recorder.Update(e.Left);
         }
 
-        // implement an IWaveProvider that takes wave in and band-passes it.
-        //   IWaveBuffer for the storage of data to manipulate
-        // use buffered wave provide to echo
-        // waveinprovider makes an iwaveprovider from a wave in - 1st stage in the pipeline?
-        // look at resamplerDmoStream / simpleCompressorStream - BandPassStream should have same signature.
-        // there are sample providers (mostly panner), but no wave providers?
-        // RawSourceWaveStream could be useful (just echos a normal stream)
-
-
-        /* something like:
-         *                 while (connected)
-                {
-                    byte[] b = this.udpListener.Receive(ref endPoint);
-                    byte[] decoded = listenerThreadState.Codec.Decode(b, 0, b.Length);
-                    waveProvider.AddSamples(decoded, 0, decoded.Length);
-                }
-         */
-
-        /* need to see what blocksize Read() gets called with, and what an fft on such a small smaple does.
-         * - see how altering waveout's desired latency effects this.
-         * INetworkCodec is a nice way to wrap up a codec, but doesn't do anything clever like block
-         */
-
-        void m_Recorder_NewVolumeEvent(object sender, Recorder.NewVolumeEventArgs e)
-        {
-            progressBar_Volume.Value = e.NormalisedVolume*100;
-        }
-
         void m_Recorder_NewPrimaryFrequencyEvent(object sender, Recorder.NewPrimaryFrequencyEventArgs e)
         {
             label1.Content = e.PrimaryFrequency;
@@ -120,7 +83,7 @@ namespace knockit
 
             if (sliderMaxFreq.Value < e.NewValue) sliderMaxFreq.Value = freq;
             _bandPassProvider.MinFreq = freq;
-            labelMinFreq.Content = freq;
+            labelMinFreq.Content = freq + "Hz";
         }
 
         private void SliderMaxFreqValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -129,7 +92,7 @@ namespace knockit
 
             if (sliderMinFreq.Value > e.NewValue) sliderMinFreq.Value = freq;
             _bandPassProvider.MaxFreq = freq;
-            labelMaxFreq.Content = freq;
+            labelMaxFreq.Content = freq + "Hz";
         }
 
         private void textBoxPistonDiameter_TextChanged(object sender, TextChangedEventArgs e)

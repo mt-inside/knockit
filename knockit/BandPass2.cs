@@ -39,39 +39,31 @@ namespace knockit
             set { _maxFreq = value; }
         }
 
-        public const int MAX_FRAME_LENGTH = 8192;
+        private const int MAX_FRAME_LENGTH = 8192;
 
-        float[] gInFIFO = new float[MAX_FRAME_LENGTH];
-        float[] gOutFIFO = new float[MAX_FRAME_LENGTH];
-        float[] gFFTworksp = new float[2 * MAX_FRAME_LENGTH];
-        float[] gLastPhase = new float[MAX_FRAME_LENGTH / 2 + 1];
-        float[] gSumPhase = new float[MAX_FRAME_LENGTH / 2 + 1];
-        float[] gOutputAccum = new float[2 * MAX_FRAME_LENGTH];
-        float[] gAnaFreq = new float[MAX_FRAME_LENGTH];
-        float[] gAnaMagn = new float[MAX_FRAME_LENGTH];
-        float[] gSynFreq = new float[MAX_FRAME_LENGTH];
-        float[] gSynMagn = new float[MAX_FRAME_LENGTH];
-        int gRover;
+        private float[] gInFIFO = new float[MAX_FRAME_LENGTH];
+        private float[] gOutFIFO = new float[MAX_FRAME_LENGTH];
+        private float[] gFFTworksp = new float[2 * MAX_FRAME_LENGTH];
+        private float[] gLastPhase = new float[MAX_FRAME_LENGTH / 2 + 1];
+        private float[] gSumPhase = new float[MAX_FRAME_LENGTH / 2 + 1];
+        private float[] gOutputAccum = new float[2 * MAX_FRAME_LENGTH];
+        private float[] gAnaFreq = new float[MAX_FRAME_LENGTH];
+        private float[] gAnaMagn = new float[MAX_FRAME_LENGTH];
+        private float[] gSynFreq = new float[MAX_FRAME_LENGTH];
+        private float[] gSynMagn = new float[MAX_FRAME_LENGTH];
+        private int gRover;
 
         private int _minFreq;
         private int _maxFreq;
 
-        ///<summary>
-        /// Routine smbPitchShift(). See top of file for explanation
-        /// Purpose: doing pitch shifting while maintaining duration using the Short
-        /// Time Fourier Transform.
-        /// Author: (c)1999-2009 Stephan M. Bernsee &lt;smb [AT] dspdimension [DOT] com&gt;
-        ///</summary>
-        ///<param name="pitchShift">Should be 1.0</param>
         ///<param name="numSampsToProcess">Length of indata</param>
         ///<param name="fftFrameSize">Size of fft frame to use. Must be &lt; 8092 and MUST be integral power of 2</param>
         ///<param name="osamp">Over-sampling factor. Should be at least 4, up to 32 for best quality</param>
         ///<param name="sampleRate">Sample rate in Hz of indata</param>
         ///<param name="indata">Input samples. Must be normalised to range [-1,1)</param>
         ///<param name="outdata">Output samples. Will be in range [-1,1). Can be same reference as indata for in-place transform</param>
-        public void smbPitchShift(float pitchShift, int numSampsToProcess, int fftFrameSize, int osamp, float sampleRate, float[] indata, float[] outdata)
+        private void bandPass(int numSampsToProcess, int fftFrameSize, int osamp, float sampleRate, float[] indata, float[] outdata)
         {
-
             double magn, phase, tmp, window, real, imag;
             double freqPerBin, expct;
             int i, k, qpd, index, inFifoLatency, stepSize, fftFrameSize2;
@@ -87,7 +79,6 @@ namespace knockit
             /* main processing loop */
             for (i = 0; i < numSampsToProcess; i++)
             {
-
                 /* As long as we have not yet collected enough data just read in */
                 gInFIFO[gRover] = indata[i];
                 outdata[i] = gOutFIFO[gRover - inFifoLatency];
@@ -218,26 +209,23 @@ namespace knockit
             }
         }
 
-        // -----------------------------------------------------------------------------------------------------------------
-
-
         /* 
-            FFT routine, (C)1996 S.M.Bernsee. Sign = -1 is FFT, 1 is iFFT (inverse)
-            Fills fftBuffer[0...2*fftFrameSize-1] with the Fourier transform of the
-            time domain data in fftBuffer[0...2*fftFrameSize-1]. The FFT array takes
-            and returns the cosine and sine parts in an interleaved manner, ie.
-            fftBuffer[0] = cosPart[0], fftBuffer[1] = sinPart[0], asf. fftFrameSize
-            must be a power of 2. It expects a complex input signal (see footnote 2),
-            ie. when working with 'common' audio signals our input signal has to be
-            passed as {in[0],0.,in[1],0.,in[2],0.,...} asf. In that case, the transform
-            of the frequencies of interest is in fftBuffer[0...fftFrameSize].
+        Sign = -1 is forward FFT, 1 is reverse (backwards) FFT
+        Fills fftBuffer[0...2*fftFrameSize-1] with the Fourier transform of the
+        time domain data in fftBuffer[0...2*fftFrameSize-1]. The FFT array takes
+        and returns the cosine and sine parts in an interleaved manner, ie.
+        fftBuffer[0] = cosPart[0], fftBuffer[1] = sinPart[0], asf. fftFrameSize
+        must be a power of 2. It expects a complex input signal (see footnote 2),
+        ie. when working with 'common' audio signals our input signal has to be
+        passed as {in[0],0.,in[1],0.,in[2],0.,...} asf. In that case, the transform
+        of the frequencies of interest is in fftBuffer[0...fftFrameSize].
         */
         public static void smbFft(float[] fftBuffer, int fftFrameSize, int sign)
         {
             float wr, wi, arg, temp;
-            int p1, p2; // MRH: were float*
+            int p1, p2; // indices, should be float*
             float tr, ti, ur, ui;
-            int p1r, p1i, p2r, p2i; // MRH: were float*
+            int p1r, p1i, p2r, p2i; // indices, should be float*
             int i, bitm, j, le, le2, k;
             int fftFrameSize2 = fftFrameSize * 2;
 
@@ -293,31 +281,6 @@ namespace knockit
                     ur = tr;
                 }
             }
-        }
-
-        /// <summary>
-        ///    12/12/02, smb
-        ///
-        ///    PLEASE NOTE:
-        ///
-        ///    There have been some reports on domain errors when the atan2() function was used
-        ///    as in the above code. Usually, a domain error should not interrupt the program flow
-        ///    (maybe except in Debug mode) but rather be handled "silently" and a global variable
-        ///    should be set according to this error. However, on some occasions people ran into
-        ///    this kind of scenario, so a replacement atan2() function is provided here.
-        ///    If you are experiencing domain errors and your program stops, simply replace all
-        ///    instances of atan2() with calls to the smbAtan2() function below.
-        /// </summary>
-        double smbAtan2(double x, double y)
-        {
-            double signx;
-            if (x > 0.0) signx = 1.0;
-            else signx = -1.0;
-
-            if (x == 0.0) return 0.0;
-            if (y == 0.0) return signx * Math.PI / 2.0;
-
-            return Math.Atan2(x, y);
         }
     }
 }
