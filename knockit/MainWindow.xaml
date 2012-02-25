@@ -1,19 +1,15 @@
 ﻿<Window x:Class="knockit.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="416" Width="789" xmlns:my="clr-namespace:knockit">
+        Title="MainWindow" Height="416" Width="528" xmlns:my="clr-namespace:knockit">
     <Grid>
-        <ListBox Height="107" HorizontalAlignment="Right" Margin="0,12,12,0" Name="listBox1" VerticalAlignment="Top" Width="315" SelectionChanged="listBox1_SelectionChanged" />
-        <ProgressBar Height="15" HorizontalAlignment="Right" Margin="0,223,12,0" Name="progressBar_Volume" VerticalAlignment="Top" Width="315"/>
-        <Slider Height="23" HorizontalAlignment="Right" Margin="0,244,12,0" Name="slider1" VerticalAlignment="Top" Width="315" />
-        <my:PolygonWaveFormControl HorizontalAlignment="Right" Margin="0,125,12,0" x:Name="polygonWaveFormControl1" VerticalAlignment="Top" Height="92" Width="315" />
-        <my:PolygonSpectrumControl HorizontalAlignment="Left" Margin="12,125,0,160" x:Name="polygonSpectrumControl1" Width="315" />
-        <Label Content="Label" Height="28" HorizontalAlignment="Left" Margin="126,91,0,0" Name="label1" VerticalAlignment="Top" Width="122" />
-        <Label Content="Primary Frequency" Height="28" HorizontalAlignment="Left" Margin="12,91,0,0" Name="label2" VerticalAlignment="Top" />
-        <Slider HorizontalAlignment="Left" Margin="12,0,0,102" Name="sliderMaxFreq" Width="315" Height="23" VerticalAlignment="Bottom" Value="1" Maximum="24000" />
-        <Slider Height="23" HorizontalAlignment="Left" Margin="12,0,0,131" Name="sliderMinFreq" VerticalAlignment="Bottom" Width="315" Maximum="24000" />
-        <Label Content="Label" Height="28" HorizontalAlignment="Left" Margin="333,218,0,0" Name="labelMinFreq" VerticalAlignment="Top" />
-        <Label Content="Label" Height="28" HorizontalAlignment="Left" Margin="333,247,0,0" Name="labelMaxFreq" VerticalAlignment="Top" />
+        <my:PolygonSpectrumControl Margin="12,125,68,160" x:Name="polygonSpectrumControl1" />
+        <Label Content="88888Hz" Height="28" HorizontalAlignment="Left" Margin="126,91,0,0" Name="label1" VerticalAlignment="Top" Width="122" />
+        <Label Content="Loudest frequency" Height="28" HorizontalAlignment="Left" Margin="12,91,0,0" Name="label2" VerticalAlignment="Top" />
+        <Slider Margin="12,0,68,102" Name="sliderMaxFreq" Height="23" VerticalAlignment="Bottom" Value="24000" Maximum="24000" />
+        <Slider Height="23" Margin="12,0,68,131" Name="sliderMinFreq" VerticalAlignment="Bottom" Maximum="24000" />
+        <Label Content="88888Hz" Height="28" HorizontalAlignment="Right" Margin="0,0,12,131" Name="labelMinFreq" VerticalAlignment="Bottom" />
+        <Label Content="88888Hz" Height="28" HorizontalAlignment="Right" Margin="0,0,12,102" Name="labelMaxFreq" VerticalAlignment="Bottom" />
         <TextBox Height="23" HorizontalAlignment="Left" Margin="12,33,0,0" Name="textBoxPistonDiameter" VerticalAlignment="Top" Width="31" Text="86" />
         <Label Content="Piston Ø" Height="28" HorizontalAlignment="Left" Margin="12,12,0,0" Name="label3" VerticalAlignment="Top" Width="60" />
         <Label Content="mm" Height="28" HorizontalAlignment="Left" Margin="41,31,0,0" Name="label4" VerticalAlignment="Top" />
@@ -22,5 +18,8 @@
         <Label Content="ε ±" Height="28" HorizontalAlignment="Left" Margin="153,12,0,0" Name="label5" VerticalAlignment="Top" />
         <TextBox Height="23" HorizontalAlignment="Left" Margin="153,33,0,0" Name="textBoxEpsilon" VerticalAlignment="Top" Width="36" Text="500" />
         <Label Content="Hz" Height="28" HorizontalAlignment="Left" Margin="186,31,0,0" Name="label7" VerticalAlignment="Top" />
+        <Button Content="Quit" Margin="0,0,12,12" Name="buttonQuit" Height="23" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="75" />
+        <Button Content="Settings" Height="23" HorizontalAlignment="Left" Margin="12,0,0,12" Name="buttonSettings" VerticalAlignment="Bottom" Width="75" />
+        <Slider HorizontalAlignment="Right" Margin="0,125,24,160" Name="slider2" Width="27" Orientation="Vertical" Maximum="1" Value="1" />
     </Grid>
 </Window>
