@@ -154,7 +154,8 @@ namespace knockit
                     Array.Clear(gSynFreq, 0, fftFrameSize);
                     for (k = 0; k <= fftFrameSize2; k++)
                     {
-                        if (gAnaFreq[k] > _minFreq && gAnaFreq[k] < _maxFreq)
+                        /* Worringly, I have no idea why I have to /2 here */
+                        if (gAnaFreq[k] > _minFreq/2.0 && gAnaFreq[k] < _maxFreq/2.0)
                         {
                             gSynMagn[k] = gAnaMagn[k];
                             gSynFreq[k] = gAnaFreq[k];

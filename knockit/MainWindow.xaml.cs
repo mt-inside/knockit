@@ -61,6 +61,9 @@ namespace knockit
             sliderMaxFreq.ValueChanged += SliderMaxFreqValueChanged;
             SliderMinFreqValueChanged(sliderMinFreq, new RoutedPropertyChangedEventArgs<double>(sliderMinFreq.Minimum,sliderMinFreq.Minimum));
             SliderMaxFreqValueChanged(sliderMaxFreq, new RoutedPropertyChangedEventArgs<double>(sliderMaxFreq.Maximum,sliderMaxFreq.Maximum));
+
+            textBoxPistonDiameter.TextChanged += textBoxPistonDiameter_TextChanged;
+            textBoxEpsilon.TextChanged += textBoxPistonDiameter_TextChanged;
         }
 
         private void sampleStream_Sample(object sender, SampleEventArgs e)
@@ -131,12 +134,17 @@ namespace knockit
 
         private void textBoxPistonDiameter_TextChanged(object sender, TextChangedEventArgs e)
         {
-            const float c_KnockFreq1mm = 572200; /* Frequency of knock in a 1mm piston */
-            float diameter;
+            const float c_KnockFreq1mm = 572200; /* Frequency of knock in a 1mm piston. http://www.phormula.co.uk/KnockCalculator.aspx */
+            double diameter, knockFreq, eFreq;
 
-            if (float.TryParse(textBoxPistonDiameter.Text, out diameter))
+            if (!Double.TryParse(textBoxEpsilon.Text, out eFreq)) eFreq = 100; //TODO to const and use for init
+
+            if (Double.TryParse(textBoxPistonDiameter.Text, out diameter))
             {
-                labelKnockFreq.Content = Math.Round(c_KnockFreq1mm/diameter/1000, 3) + "kHz"; //TODO raise event
+                knockFreq = c_KnockFreq1mm/diameter; //TODO raise event
+                labelKnockFreq.Content = Math.Round(knockFreq/1000,3) + "kHz";
+                sliderMinFreq.Value = knockFreq - eFreq;
+                sliderMaxFreq.Value = knockFreq + eFreq;
             }
             else
             {
