@@ -14,5 +14,10 @@
         <Slider Height="23" HorizontalAlignment="Left" Margin="12,0,0,131" Name="sliderMinFreq" VerticalAlignment="Bottom" Width="315" Maximum="24000" />
         <Label Content="Label" Height="28" HorizontalAlignment="Left" Margin="333,218,0,0" Name="labelMinFreq" VerticalAlignment="Top" />
         <Label Content="Label" Height="28" HorizontalAlignment="Left" Margin="333,247,0,0" Name="labelMaxFreq" VerticalAlignment="Top" />
+        <TextBox Height="23" HorizontalAlignment="Left" Margin="12,33,0,0" Name="textBoxPistonDiameter" VerticalAlignment="Top" Width="60" TextChanged="textBoxPistonDiameter_TextChanged" />
+        <Label Content="Piston Ø" Height="28" HorizontalAlignment="Left" Margin="12,12,0,0" Name="label3" VerticalAlignment="Top" Width="60" />
+        <Label Content="mm" Height="28" HorizontalAlignment="Left" Margin="70,31,0,0" Name="label4" VerticalAlignment="Top" />
+        <Label Content="--kHz" Height="28" HorizontalAlignment="Left" Margin="126,31,0,0" Name="labelKnockFreq" VerticalAlignment="Top" />
+        <Label Content="Knock Freq" Height="28" HorizontalAlignment="Left" Margin="126,12,0,0" Name="label6" VerticalAlignment="Top" />
     </Grid>
 </Window>

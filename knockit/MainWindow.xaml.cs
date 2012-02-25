@@ -128,5 +128,20 @@ namespace knockit
             _bandPassProvider.MaxFreq = freq;
             labelMaxFreq.Content = freq;
         }
+
+        private void textBoxPistonDiameter_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            const float c_KnockFreq1mm = 572200; /* Frequency of knock in a 1mm piston */
+            float diameter;
+
+            if (float.TryParse(textBoxPistonDiameter.Text, out diameter))
+            {
+                labelKnockFreq.Content = Math.Round(c_KnockFreq1mm/diameter/1000, 3) + "kHz"; //TODO raise event
+            }
+            else
+            {
+                labelKnockFreq.Content = "--kHz";
+            }
+        }
     }
 }
