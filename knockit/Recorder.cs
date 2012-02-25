@@ -117,13 +117,10 @@ namespace knockit
             {
                 m_FftIndex = 0;
 
+                // FIXME: de-deup these FFTs
                 Complex[] fftResult = FFTHelper.FFT(m_FftWindow);
                 float[] freqDomain = FFTHelper.ComplexToAmplitude(fftResult, fftResult.Length / 2);
 
-                /*  */
-                float binBandwith = (float)_sampleRate/m_FftWindow.Length;
-                int firstBin = 0;
-                int lastBin = (int) (5000/binBandwith);
                 RaiseEvent(new NewFFTDataEventArgs(freqDomain), NewFFTDataEvent);
 
                 // TODO: fft helper to raise struct with max etc in.

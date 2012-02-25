@@ -10,8 +10,8 @@
         <my:PolygonSpectrumControl HorizontalAlignment="Left" Margin="12,125,0,160" x:Name="polygonSpectrumControl1" Width="315" />
         <Label Content="Label" Height="28" HorizontalAlignment="Left" Margin="126,91,0,0" Name="label1" VerticalAlignment="Top" Width="122" />
         <Label Content="Primary Frequency" Height="28" HorizontalAlignment="Left" Margin="12,91,0,0" Name="label2" VerticalAlignment="Top" />
-        <Slider HorizontalAlignment="Left" Margin="12,0,0,102" Name="sliderMaxFreq" Width="315" Height="23" VerticalAlignment="Bottom" Value="1" Maximum="1" />
-        <Slider Height="23" HorizontalAlignment="Left" Margin="12,0,0,131" Name="sliderMinFreq" VerticalAlignment="Bottom" Width="315" Maximum="1" />
+        <Slider HorizontalAlignment="Left" Margin="12,0,0,102" Name="sliderMaxFreq" Width="315" Height="23" VerticalAlignment="Bottom" Value="1" Maximum="24000" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="12,0,0,131" Name="sliderMinFreq" VerticalAlignment="Bottom" Width="315" Maximum="24000" />
         <Label Content="Label" Height="28" HorizontalAlignment="Left" Margin="333,218,0,0" Name="labelMinFreq" VerticalAlignment="Top" />
         <Label Content="Label" Height="28" HorizontalAlignment="Left" Margin="333,247,0,0" Name="labelMaxFreq" VerticalAlignment="Top" />
     </Grid>

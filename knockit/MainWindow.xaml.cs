@@ -16,7 +16,7 @@ namespace knockit
         private WaveIn m_WaveIn;
         private Recorder m_Recorder = new Recorder(c_SampleRate);
         private WaveOut m_WaveOut;
-        private readonly BandPassProvider _bandPassProvider;
+        private readonly BandPass2 _bandPassProvider;
 
         public MainWindow()
         {
@@ -43,7 +43,7 @@ namespace knockit
             IWaveProvider waveInWaveProvider = new WaveInProvider(m_WaveIn);
             ISampleProvider sampleChannel = new SampleChannel(waveInWaveProvider);
             //ISampleProvider bandpass = new BandPassProvider(sampleChannel, 1000f / c_MaxFrequency, 2000f / c_MaxFrequency);
-            _bandPassProvider = new BandPassProvider(sampleChannel);
+            _bandPassProvider = new BandPass2(sampleChannel);
             NotifyingSampleProvider sampleStream = new NotifyingSampleProvider(_bandPassProvider);
 
             sampleStream.Sample +=sampleStream_Sample;
@@ -59,10 +59,8 @@ namespace knockit
 
             sliderMinFreq.ValueChanged += SliderMinFreqValueChanged;
             sliderMaxFreq.ValueChanged += SliderMaxFreqValueChanged;
-            SliderMinFreqValueChanged(sliderMinFreq, new RoutedPropertyChangedEventArgs<double>(0,0));
-            SliderMaxFreqValueChanged(sliderMaxFreq, new RoutedPropertyChangedEventArgs<double>(1,1));
-
-
+            SliderMinFreqValueChanged(sliderMinFreq, new RoutedPropertyChangedEventArgs<double>(sliderMinFreq.Minimum,sliderMinFreq.Minimum));
+            SliderMaxFreqValueChanged(sliderMaxFreq, new RoutedPropertyChangedEventArgs<double>(sliderMaxFreq.Maximum,sliderMaxFreq.Maximum));
         }
 
         private void sampleStream_Sample(object sender, SampleEventArgs e)
@@ -115,18 +113,20 @@ namespace knockit
 
         private void SliderMinFreqValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (sliderMaxFreq.Value < e.NewValue) sliderMaxFreq.Value = e.NewValue;
-            _bandPassProvider.MinFreqNormalised = (float) e.NewValue;
+            int freq = (int) e.NewValue;
 
-            labelMinFreq.Content = Math.Round(c_MaxFrequency*e.NewValue);
+            if (sliderMaxFreq.Value < e.NewValue) sliderMaxFreq.Value = freq;
+            _bandPassProvider.MinFreq = freq;
+            labelMinFreq.Content = freq;
         }
 
         private void SliderMaxFreqValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (sliderMinFreq.Value > e.NewValue) sliderMinFreq.Value = e.NewValue;
-            _bandPassProvider.MaxFreqNormalised = (float) e.NewValue;
+            int freq = (int) e.NewValue;
 
-            labelMaxFreq.Content = Math.Round(c_MaxFrequency*e.NewValue);
+            if (sliderMinFreq.Value > e.NewValue) sliderMinFreq.Value = freq;
+            _bandPassProvider.MaxFreq = freq;
+            labelMaxFreq.Content = freq;
         }
     }
 }
