@@ -7,17 +7,17 @@ namespace knockit
     {
         private readonly ISampleProvider _src;
 
-        internal BandPass2(ISampleProvider src)
+        public BandPass2(ISampleProvider src)
         {
             _src = src;
         }
 
         public int Read(float[] buffer, int offset, int count)
         {
-            float[] wavein = new float[count];
-            _src.Read(wavein, offset, count);
+            _src.Read(buffer, offset, count);
 
-            smbPitchShift(0.5f, count, 1024, 4, _src.WaveFormat.SampleRate, wavein, buffer);
+            // TODO: monitor cpu usage and adjust 3rd parameter.
+            bandPass(count, 1024, 4, _src.WaveFormat.SampleRate, buffer, buffer);
 
             return count;
         }
