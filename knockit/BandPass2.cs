@@ -27,19 +27,34 @@ namespace knockit
             get { return _src.WaveFormat; }
         }
 
+        public int MinFreq
+        {
+            get { return _minFreq; }
+            set { _minFreq = value; }
+        }
+
+        public int MaxFreq
+        {
+            get { return _maxFreq; }
+            set { _maxFreq = value; }
+        }
+
         public const int MAX_FRAME_LENGTH = 8192;
 
-        static float[] gInFIFO = new float[MAX_FRAME_LENGTH];
-        static float[] gOutFIFO = new float[MAX_FRAME_LENGTH];
-        static float[] gFFTworksp = new float[2 * MAX_FRAME_LENGTH];
-        static float[] gLastPhase = new float[MAX_FRAME_LENGTH / 2 + 1];
-        static float[] gSumPhase = new float[MAX_FRAME_LENGTH / 2 + 1];
-        static float[] gOutputAccum = new float[2 * MAX_FRAME_LENGTH];
-        static float[] gAnaFreq = new float[MAX_FRAME_LENGTH];
-        static float[] gAnaMagn = new float[MAX_FRAME_LENGTH];
-        static float[] gSynFreq = new float[MAX_FRAME_LENGTH];
-        static float[] gSynMagn = new float[MAX_FRAME_LENGTH];
-        static int gRover;
+        float[] gInFIFO = new float[MAX_FRAME_LENGTH];
+        float[] gOutFIFO = new float[MAX_FRAME_LENGTH];
+        float[] gFFTworksp = new float[2 * MAX_FRAME_LENGTH];
+        float[] gLastPhase = new float[MAX_FRAME_LENGTH / 2 + 1];
+        float[] gSumPhase = new float[MAX_FRAME_LENGTH / 2 + 1];
+        float[] gOutputAccum = new float[2 * MAX_FRAME_LENGTH];
+        float[] gAnaFreq = new float[MAX_FRAME_LENGTH];
+        float[] gAnaMagn = new float[MAX_FRAME_LENGTH];
+        float[] gSynFreq = new float[MAX_FRAME_LENGTH];
+        float[] gSynMagn = new float[MAX_FRAME_LENGTH];
+        int gRover;
+
+        private int _minFreq;
+        private int _maxFreq;
 
         ///<summary>
         /// Routine smbPitchShift(). See top of file for explanation
@@ -54,7 +69,7 @@ namespace knockit
         ///<param name="sampleRate">Sample rate in Hz of indata</param>
         ///<param name="indata">Input samples. Must be normalised to range [-1,1)</param>
         ///<param name="outdata">Output samples. Will be in range [-1,1). Can be same reference as indata for in-place transform</param>
-        public static void smbPitchShift(float pitchShift, int numSampsToProcess, int fftFrameSize, int osamp, float sampleRate, float[] indata, float[] outdata)
+        public void smbPitchShift(float pitchShift, int numSampsToProcess, int fftFrameSize, int osamp, float sampleRate, float[] indata, float[] outdata)
         {
 
             double magn, phase, tmp, window, real, imag;
@@ -134,16 +149,15 @@ namespace knockit
                     }
 
                     /* ***************** PROCESSING ******************* */
-                    /* this does the actual pitch shifting */
+                    /* Infinite-rolloff band-pass filter between _minFreq and _maxFreq */
                     Array.Clear(gSynMagn, 0, fftFrameSize);
                     Array.Clear(gSynFreq, 0, fftFrameSize);
                     for (k = 0; k <= fftFrameSize2; k++)
                     {
-                        index = (int)(k * pitchShift);
-                        if (index <= fftFrameSize2)
+                        if (gAnaFreq[k] > _minFreq && gAnaFreq[k] < _maxFreq)
                         {
-                            gSynMagn[index] += gAnaMagn[k];
-                            gSynFreq[index] = gAnaFreq[k] * pitchShift;
+                            gSynMagn[k] = gAnaMagn[k];
+                            gSynFreq[k] = gAnaFreq[k];
                         }
                     }
 
