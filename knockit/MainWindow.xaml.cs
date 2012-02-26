@@ -67,16 +67,6 @@ namespace knockit
             label1.Content = e.PrimaryFrequency;
         }
 
-        private void listBox1_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var me = sender as ListBox;
-            if (me != null)
-            {
-                /* TODO: don't think this is working */
-                m_WaveIn.DeviceNumber = me.SelectedIndex;
-            }
-        }
-
         private void SliderMinFreqValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             int freq = (int) e.NewValue;
