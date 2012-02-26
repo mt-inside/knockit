@@ -60,6 +60,7 @@
     </ApplicationDefinition>
     <Compile Include="BandPass2.cs" />
     <Compile Include="Recorder.cs" />
+    <Compile Include="Utils.cs" />
     <Compile Include="WindowSettings.xaml.cs">
       <DependentUpon>WindowSettings.xaml</DependentUpon>
     </Compile>

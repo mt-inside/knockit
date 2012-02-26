@@ -105,10 +105,9 @@ namespace knockit
 
             if ((m_SampleCount % 4800) == 0)
             {
-                /* TODO: update with max of the last peroid */
-                RaiseEvent(new NewVolumeEventArgs(Math.Max(-_minSample, _maxSample)), NewVolumeEvent);
+                Utils.RaiseEvent(NewVolumeEvent, this, new NewVolumeEventArgs(Math.Max(-_minSample, _maxSample)));
                 /* wat should these values be? */
-                RaiseEvent(new NewWaveformSampleEventArgs(_minSample, _maxSample), NewWaveformSampleEvent);
+                Utils.RaiseEvent(NewWaveformSampleEvent, this, new NewWaveformSampleEventArgs(_minSample, _maxSample));
 
                 _minSample = _maxSample = 0;
             }
@@ -121,19 +120,10 @@ namespace knockit
                 Complex[] fftResult = FFTHelper.FFT(m_FftWindow);
                 float[] freqDomain = FFTHelper.ComplexToAmplitude(fftResult, fftResult.Length / 2);
 
-                RaiseEvent(new NewFFTDataEventArgs(freqDomain), NewFFTDataEvent);
+                Utils.RaiseEvent(NewFFTDataEvent, this, new NewFFTDataEventArgs(freqDomain));
 
                 // TODO: fft helper to raise struct with max etc in.
                 //RaiseEvent(new NewPrimaryFrequencyEventArgs((int) (freqMax*binBandwith)), NewPrimaryFrequencyEvent);
-            }
-        }
-
-        private void RaiseEvent<T>(T eventArgs, EventHandler<T> handler)
-            where T : EventArgs
-        {
-            if (handler != null)
-            {
-                handler(this, eventArgs);
             }
         }
     }
