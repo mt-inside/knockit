@@ -90,9 +90,9 @@ namespace knockit
             const float c_KnockFreq1mm = 572200; /* Frequency of knock in a 1mm piston. http://www.phormula.co.uk/KnockCalculator.aspx */
             double diameter, knockFreq, eFreq;
 
-            if (!Double.TryParse(textBoxEpsilon.Text, out eFreq)) eFreq = 100; //TODO to const and use for init
+            if (!Double.TryParse(textBoxEpsilon.Text, out eFreq) || eFreq == 0) eFreq = 500; //TODO to const and use for init
 
-            if (Double.TryParse(textBoxPistonDiameter.Text, out diameter))
+            if (Double.TryParse(textBoxPistonDiameter.Text, out diameter) && diameter != 0)
             {
                 knockFreq = c_KnockFreq1mm/diameter; //TODO raise event
                 labelKnockFreq.Content = Math.Round(knockFreq/1000,3) + "kHz";
