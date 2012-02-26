@@ -104,5 +104,15 @@ namespace knockit
                 labelKnockFreq.Content = "--kHz";
             }
         }
+
+        private void buttonSettings_Click(object sender, RoutedEventArgs e)
+        {
+            (new WindowSettings(m_WaveIn, m_WaveOut)).ShowDialog();
+        }
+
+        private void buttonQuit_Click(object sender, RoutedEventArgs e)
+        {
+            App.Current.Shutdown();
+        }
     }
 }
