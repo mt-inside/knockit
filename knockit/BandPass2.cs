@@ -146,7 +146,8 @@ namespace knockit
                     for (k = 0; k <= fftFrameSize2; k++)
                     {
                         /* Worringly, I have no idea why I have to /2 here */
-                        if (gAnaFreq[k] > _minFreq/2.0 && gAnaFreq[k] < _maxFreq/2.0)
+                        if (gAnaFreq[k] > _minFreq/2.0 && gAnaFreq[k] < _maxFreq/2.0 ||
+                            gAnaFreq[k] > _minFreq && gAnaFreq[k] < _maxFreq)
                         {
                             gSynMagn[k] = gAnaMagn[k];
                             gSynFreq[k] = gAnaFreq[k];
