@@ -11,6 +11,8 @@ namespace knockit
     /// </summary>
     public partial class MainWindow : Window
     {
+        private int _inputDeviceNo;
+        private int _outputDeviceNo;
         private WaveIn _waveInDevice;
         private WaveStream _waveInFileStream;
         private WaveOut _waveOutDevice;
@@ -23,12 +25,21 @@ namespace knockit
             InitializeComponent();
 
 
+            if (args.Length >= 1)
+            {
+                int.TryParse(args[0], out _inputDeviceNo);
+            }
+            if (args.Length >= 2)
+            {
+                int.TryParse(args[1], out _outputDeviceNo);
+            }
+
             /* Input waveform */
             IWaveProvider inputWaveform;
 
-            if (args.Length == 1) /* TODO: button for this */
+            if (args.Length >= 3) /* TODO: button for this */
             {
-                _waveInFileStream = new WaveFileReader(args[0]);
+                _waveInFileStream = new WaveFileReader(args[2]);
                 if (_waveInFileStream.WaveFormat.Encoding != WaveFormatEncoding.Pcm)
                 {
                     _waveInFileStream = WaveFormatConversionStream.CreatePcmStream(_waveInFileStream);
@@ -46,7 +57,7 @@ namespace knockit
             {
                 _waveInDevice = new WaveIn
                 {
-                    DeviceNumber = 2,
+                    DeviceNumber = _inputDeviceNo,
                     WaveFormat = new WaveFormat(_recorder.SampleRate, 16, 1)
                 };
                 _waveInDevice.StartRecording();
@@ -66,6 +77,7 @@ namespace knockit
             /* Output */
             _waveOutDevice = new WaveOut
             {
+                DeviceNumber = _outputDeviceNo,
                 Volume = 1
             };
             _waveOutDevice.Init(new SampleToWaveProvider(sampleStream));
