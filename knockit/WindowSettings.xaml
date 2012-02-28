@@ -1,7 +1,7 @@
 ﻿<Window x:Class="knockit.WindowSettings"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="WindowSettings" Height="399" Width="505">
+        Title="knockit - settings" Height="399" Width="505">
     <Grid>
         <ListBox Height="107" Margin="12,45,12,0" Name="listBoxIn" VerticalAlignment="Top" SelectionChanged="listBoxIn_SelectionChanged" />
         <ListBox Height="100" Margin="12,199,12,0" Name="listBoxOut" VerticalAlignment="Top" SelectionChanged="listBoxOut_SelectionChanged" />

@@ -1,7 +1,7 @@
 ﻿<Window x:Class="knockit.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="416" Width="528" xmlns:my="clr-namespace:knockit"
+        Title="knockit" Height="416" Width="528" xmlns:my="clr-namespace:knockit"
         Closed="Window_Closed">
     <Grid>
         <my:PolygonSpectrumControl Margin="12,125,68,160" x:Name="_polygonSpectrumControl" />
