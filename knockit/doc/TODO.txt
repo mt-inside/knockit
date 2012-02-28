@@ -8,3 +8,5 @@ Persist settings (win location, freq & epsilon, devices)
 Absility to name and save setups, provide some defaults, e.g. SR20, 2JZ
 Ability to turn on and off 1st, 2nd, 3rd harmonic
 Make changing devices at run-time work. If devices unset in settings file, prompt up-front on first run.
+Consider ASIO devices (prolly need a fallback). How much laptop hardware has ASIO?
+Get full device names using DSound API (it's complicated)
