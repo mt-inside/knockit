@@ -11,62 +11,68 @@ namespace knockit
     /// </summary>
     public partial class MainWindow : Window
     {
+        private WaveIn _waveInDevice;
+        private WaveStream _waveInFileStream;
+        private WaveOut _waveOutDevice;
         private const int c_SampleRate = 48000;
-        private WaveIn m_WaveIn;
-        private Recorder m_Recorder = new Recorder(c_SampleRate);
-        private WaveOut m_WaveOut;
+        private Recorder _recorder = new Recorder(c_SampleRate);
         private readonly BandPass2 _bandPassProvider;
 
         public MainWindow(string[] args)
         {
             InitializeComponent();
 
-            IWaveProvider waveIn;
 
-            polygonSpectrumControl1.Recorder = m_Recorder;
-
-            m_Recorder.NewPrimaryFrequencyEvent += m_Recorder_NewPrimaryFrequencyEvent;
+            /* Input waveform */
+            IWaveProvider inputWaveform;
 
             if (args.Length == 1) /* TODO: button for this */
             {
-                WaveStream readerStream = new WaveFileReader(args[0]);
-                if (readerStream.WaveFormat.Encoding != WaveFormatEncoding.Pcm)
+                _waveInFileStream = new WaveFileReader(args[0]);
+                if (_waveInFileStream.WaveFormat.Encoding != WaveFormatEncoding.Pcm)
                 {
-                    readerStream = WaveFormatConversionStream.CreatePcmStream(readerStream);
-                    readerStream = new BlockAlignReductionStream(readerStream);
+                    _waveInFileStream = WaveFormatConversionStream.CreatePcmStream(_waveInFileStream);
+                    _waveInFileStream = new BlockAlignReductionStream(_waveInFileStream);
                 }
 
-                if (readerStream.WaveFormat.BitsPerSample != 16)
+                if (_waveInFileStream.WaveFormat.BitsPerSample != 16)
                 {
-                    var format = new WaveFormat(readerStream.WaveFormat.SampleRate, 16, readerStream.WaveFormat.Channels);
-                    readerStream = new WaveFormatConversionStream(format, readerStream);
+                    var format = new WaveFormat(_waveInFileStream.WaveFormat.SampleRate, 16, _waveInFileStream.WaveFormat.Channels);
+                    _waveInFileStream = new WaveFormatConversionStream(format, _waveInFileStream);
                 }
-                waveIn = new LoopingStream(new WaveChannel32(readerStream));
+                inputWaveform = new LoopingStream(new WaveChannel32(_waveInFileStream));
             }
             else
             {
-                m_WaveIn = new WaveIn
+                _waveInDevice = new WaveIn
                 {
                     DeviceNumber = 2,
-                    WaveFormat = new WaveFormat(m_Recorder.SampleRate, 16, 1)
+                    WaveFormat = new WaveFormat(_recorder.SampleRate, 16, 1)
                 };
-                waveIn = new WaveInProvider(m_WaveIn);
-                m_WaveIn.StartRecording();
+                _waveInDevice.StartRecording();
+
+                inputWaveform = new WaveInProvider(_waveInDevice);
             }
             
-            ISampleProvider sampleChannel = new SampleChannel(waveIn); //TODO: when we're not using recorder any more, this stay as a wave provider, I think
+            /* Input processing pipeline */
+            ISampleProvider sampleChannel = new SampleChannel(inputWaveform); //TODO: when we're not using recorder any more, this stay as a wave provider, I think
             _bandPassProvider = new BandPass2(sampleChannel);
             NotifyingSampleProvider sampleStream = new NotifyingSampleProvider(_bandPassProvider);
             sampleStream.Sample += sampleStream_Sample; //TODO: want to get away from using the Recorder, really
+            _polygonSpectrumControl.Recorder = _recorder;
+            _recorder.NewPrimaryFrequencyEvent += RecorderNewPrimaryFrequencyEvent;
 
-            m_WaveOut = new WaveOut
+            
+            /* Output */
+            _waveOutDevice = new WaveOut
             {
                 Volume = 1
             };
-            m_WaveOut.Init(new SampleToWaveProvider(sampleStream));
-            m_WaveOut.Play();
-            // TODO: dispose of these, close, etc
+            _waveOutDevice.Init(new SampleToWaveProvider(sampleStream));
+            _waveOutDevice.Play();
 
+            
+            /* UI Events */
             sliderMinFreq.ValueChanged += SliderMinFreqValueChanged;
             sliderMaxFreq.ValueChanged += SliderMaxFreqValueChanged;
             textBoxPistonDiameter.TextChanged += textBoxPistonDiameter_TextChanged;
@@ -77,10 +83,10 @@ namespace knockit
 
         private void sampleStream_Sample(object sender, SampleEventArgs e)
         {
-            m_Recorder.Update(e.Left);
+            _recorder.Update(e.Left);
         }
 
-        void m_Recorder_NewPrimaryFrequencyEvent(object sender, Recorder.NewPrimaryFrequencyEventArgs e)
+        void RecorderNewPrimaryFrequencyEvent(object sender, Recorder.NewPrimaryFrequencyEventArgs e)
         {
             label1.Content = e.PrimaryFrequency;
         }
@@ -115,7 +121,7 @@ namespace knockit
 
         private void UpdateShit()
         {
-            //if (IsInitialized)
+            if (IsInitialized)
             {
                 const float c_KnockFreq1mm = 572200; /* Frequency of knock in a 1mm piston. http://www.phormula.co.uk/KnockCalculator.aspx */
                 double diameter, knockFreq, eFreq;
@@ -138,12 +144,31 @@ namespace knockit
 
         private void buttonSettings_Click(object sender, RoutedEventArgs e)
         {
-            (new WindowSettings(m_WaveIn, m_WaveOut)).ShowDialog();
+            if (_waveInDevice != null && _waveOutDevice != null)
+            {
+                (new WindowSettings(_waveInDevice, _waveOutDevice)).ShowDialog();
+            }
         }
 
         private void buttonQuit_Click(object sender, RoutedEventArgs e)
         {
             App.Current.Shutdown();
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            if (_waveInDevice != null)
+            {
+                _waveInDevice.StopRecording();
+                _waveInDevice.Dispose();
+            }
+            else if (_waveInFileStream != null)
+            {
+                _waveInFileStream.Close();
+            }
+
+            _waveOutDevice.Stop();
+            _waveOutDevice.Dispose();
         }
     }
 }

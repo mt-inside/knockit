@@ -1,9 +1,10 @@
 ﻿<Window x:Class="knockit.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="416" Width="528" xmlns:my="clr-namespace:knockit">
+        Title="MainWindow" Height="416" Width="528" xmlns:my="clr-namespace:knockit"
+        Closed="Window_Closed">
     <Grid>
-        <my:PolygonSpectrumControl Margin="12,125,68,160" x:Name="polygonSpectrumControl1" />
+        <my:PolygonSpectrumControl Margin="12,125,68,160" x:Name="_polygonSpectrumControl" />
         <Label Content="88888Hz" Height="28" HorizontalAlignment="Left" Margin="117,91,0,0" Name="label1" VerticalAlignment="Top" Width="63" HorizontalContentAlignment="Right" />
         <Label Content="Loudest frequency" Height="28" HorizontalAlignment="Left" Margin="12,91,0,0" Name="label2" VerticalAlignment="Top" />
         <Slider Margin="12,0,68,102" Name="sliderMaxFreq" Height="23" VerticalAlignment="Bottom" Value="24000" Maximum="24000" />
