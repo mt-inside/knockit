@@ -67,7 +67,7 @@ namespace knockit
         {
             double magn, phase, tmp, window, real, imag;
             double freqPerBin, expct;
-            int i, k, qpd, index, inFifoLatency, stepSize, fftFrameSize2;
+            int i, k, qpd, inFifoLatency, stepSize, fftFrameSize2;
 
             /* set up some handy variables */
             fftFrameSize2 = fftFrameSize / 2;
@@ -106,7 +106,6 @@ namespace knockit
                     /* this is the analysis step */
                     for (k = 0; k <= fftFrameSize2; k++)
                     {
-
                         /* de-interlace FFT buffer */
                         real = gFFTworksp[k].X;
                         imag = gFFTworksp[k].Y;
@@ -137,7 +136,6 @@ namespace knockit
                         /* store magnitude and true frequency in analysis arrays */
                         gAnaMagn[k] = (float)magn;
                         gAnaFreq[k] = (float)tmp;
-
                     }
 
                     /* ***************** PROCESSING ******************* */
@@ -159,7 +157,6 @@ namespace knockit
                     /* this is the synthesis step */
                     for (k = 0; k <= fftFrameSize2; k++)
                     {
-
                         /* get magnitude and true frequency from synthesis arrays */
                         magn = gSynMagn[k];
                         tmp = gSynFreq[k];
@@ -200,12 +197,12 @@ namespace knockit
                     for (k = 0; k < stepSize; k++) gOutFIFO[k] = gOutputAccum[k];
 
                     /* shift accumulator */
-                    int destOffset = 0;
                     int sourceOffset = stepSize;
-                    Array.Copy(gOutputAccum, sourceOffset, gOutputAccum, destOffset, fftFrameSize);
-                    //memmove(gOutputAccum, gOutputAccum + stepSize, fftFrameSize * sizeof(float));
+                    /* TODO: this seems expensive, can't I just update an offset of something? */
+                    Array.Copy(gOutputAccum, sourceOffset, gOutputAccum, 0, fftFrameSize);
 
                     /* move input FIFO */
+                    /* TODO: this seems expensive. Can't I just update an offset of something? */
                     for (k = 0; k < inFifoLatency; k++) gInFIFO[k] = gInFIFO[k + stepSize];
                 }
             }
