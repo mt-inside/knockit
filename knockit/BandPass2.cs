@@ -132,7 +132,7 @@ namespace knockit
 
                     /* ***************** ANALYSIS ******************* */
                     /* do transform */
-                    FastFourierTransform.FFT(false, (int) Math.Log(fftFrameSize, 2), gFFTworksp);
+                    FastFourierTransform.FFT(true, (int) Math.Log(fftFrameSize, 2), gFFTworksp);
 
                     /* this is the analysis step */
                     for (k = 0; k <= fftFrameSize2; k++)
@@ -214,7 +214,6 @@ namespace knockit
                         gFFTworksp[k].Y = (float)(magn * Math.Sin(phase));
                     }
 
-                    // TODO: not necc if the processing loop stops at fftsize/2 ?
                     /* zero negative frequencies */
                     for (k = fftFrameSize2 + 1; k < fftFrameSize; k++)
                     {
