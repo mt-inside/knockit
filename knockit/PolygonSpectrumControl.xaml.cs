@@ -108,7 +108,7 @@ namespace knockit
             for (int i = 0; i < pointCount; ++i)
             {
                 float point = 0;
-                int maxFreq = (int)(((float)(i + 1) / pointCount) * 48000);
+                int maxFreq = (int)(((float)(i + 1) / pointCount) * MainWindow.SampleRate);
                 old_j = j;
                 while(j < len && freqs[j] < maxFreq)
                 {

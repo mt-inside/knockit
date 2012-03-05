@@ -7,8 +7,8 @@
         <my:PolygonSpectrumControl Margin="12,125,68,160" x:Name="_polygonSpectrumControl" />
         <Label Content="88888Hz" Height="28" HorizontalAlignment="Left" Margin="117,91,0,0" Name="label1" VerticalAlignment="Top" Width="63" HorizontalContentAlignment="Right" />
         <Label Content="Loudest frequency" Height="28" HorizontalAlignment="Left" Margin="12,91,0,0" Name="label2" VerticalAlignment="Top" />
-        <Slider Margin="12,0,68,102" Name="sliderMaxFreq" Height="23" VerticalAlignment="Bottom" Value="24000" Maximum="24000" />
-        <Slider Height="23" Margin="12,0,68,131" Name="sliderMinFreq" VerticalAlignment="Bottom" Maximum="24000" />
+        <Slider Margin="12,0,68,102" Name="sliderMaxFreq" Height="23" VerticalAlignment="Bottom" />
+        <Slider Height="23" Margin="12,0,68,131" Name="sliderMinFreq" VerticalAlignment="Bottom" />
         <Label Content="88888Hz" Height="28" HorizontalAlignment="Right" Margin="0,0,12,131" Name="labelMinFreq" VerticalAlignment="Bottom" />
         <Label Content="88888Hz" Height="28" HorizontalAlignment="Right" Margin="0,0,12,102" Name="labelMaxFreq" VerticalAlignment="Bottom" />
         <TextBox Height="23" HorizontalAlignment="Left" Margin="12,33,0,0" Name="textBoxPistonDiameter" VerticalAlignment="Top" Width="31" Text="86" />
