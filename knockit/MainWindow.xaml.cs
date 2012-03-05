@@ -19,9 +19,16 @@ namespace knockit
         private const int c_SampleRate = 48000;
         private readonly BandPass2 _bandPassProvider;
 
+        public static int SampleRate
+        {
+            get { return c_SampleRate; }
+        }
+
         public MainWindow(string[] args)
         {
             InitializeComponent();
+
+            sliderMinFreq.Maximum = sliderMaxFreq.Value = sliderMaxFreq.Maximum = SampleRate;
 
 
             if (args.Length >= 1)
@@ -57,7 +64,7 @@ namespace knockit
                 _waveInDevice = new WaveIn
                 {
                     DeviceNumber = _inputDeviceNo,
-                    WaveFormat = new WaveFormat(c_SampleRate, 16, 1)
+                    WaveFormat = new WaveFormat(SampleRate, 16, 1)
                 };
                 _waveInDevice.StartRecording();
 
