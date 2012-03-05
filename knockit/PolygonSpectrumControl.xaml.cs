@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System;
+using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -7,15 +9,14 @@ namespace knockit
 {
     public partial class PolygonSpectrumControl : UserControl
     {
-        private Recorder _recorder;
+        private BandPass2 _bp2;
 
-        public Recorder Recorder
+        internal BandPass2 bp2
         {
-            get { return _recorder; }
             set
             {
-                _recorder = value;
-                _recorder.NewFFTDataEvent += _recorder_NewFFTDataEvent;
+                _bp2 = value;
+                _bp2.NewFFTDataEvent += _recorder_NewFFTDataEvent;
             }
         }
 
@@ -24,15 +25,15 @@ namespace knockit
             InitializeComponent();
         }
 
-        void _recorder_NewFFTDataEvent(object sender, Recorder.NewFFTDataEventArgs e)
+        void _recorder_NewFFTDataEvent(object sender, NewFFTDataEventArgs e)
         {
             if (IsEnabled)
             {
-                DrawFFT(e.Fft);
+                DrawFFT(e.Freqs, e.Mags, e.Len);
             }
         }
 
-#if false
+        #if false
         private void DrawFFT(float[] fft /* normalised to [0-1] */)
         {
             const int barWidth = 1;
@@ -65,8 +66,9 @@ namespace knockit
                 mainCanvas.Children.Add(rect);
             }
         }
-#endif
+        #endif
 
+        #if false
         private void DrawFFT(float[] fft /* normalised */)
         {
             const int pointSpacing = 1;
@@ -84,6 +86,50 @@ namespace knockit
                 point /= (upperBin - lowerBin);
                 Point p = new Point(i * pointSpacing, ActualHeight - (point * ActualHeight));
                 if(i >= polylineSpectrum.Points.Count)
+                {
+                    polylineSpectrum.Points.Add(p);
+                }
+                else
+                {
+                    polylineSpectrum.Points[i] = p;
+                }
+            }
+        }
+        #endif
+
+        private void DrawFFT(float[] freqs, float[] mags, int len)
+        {
+            const int pointSpacing = 1;
+            int pointCount = (int)ActualWidth / pointSpacing;
+            int j = 0, old_j;
+
+            float max = mags.Max(); //todo: push me into bp2 and have it record primary freq there too.
+
+            for (int i = 0; i < pointCount; ++i)
+            {
+                float point = 0;
+                int maxFreq = (int)(((float)(i + 1) / pointCount) * 48000);
+                old_j = j;
+                while(j < len && freqs[j] < maxFreq)
+                {
+                    point += mags[j];
+                    j++;
+                }
+
+                Point p;
+                if (j == old_j)
+                {
+                    p = new Point(i * pointSpacing, ActualHeight); //should i skip these? can i bring the freqs closer together with a larger fft frame for example?
+                    //continue;
+                }
+                else
+                {
+                    point /= (j - old_j);
+                    point /= max;
+                    p = new Point(i * pointSpacing, ActualHeight - (Math.Abs(point) * ActualHeight));
+                }
+                
+                if (i >= polylineSpectrum.Points.Count)
                 {
                     polylineSpectrum.Points.Add(p);
                 }

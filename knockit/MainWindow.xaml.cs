@@ -17,7 +17,6 @@ namespace knockit
         private WaveStream _waveInFileStream;
         private WaveOut _waveOutDevice;
         private const int c_SampleRate = 48000;
-        private Recorder _recorder = new Recorder(c_SampleRate);
         private readonly BandPass2 _bandPassProvider;
 
         public MainWindow(string[] args)
@@ -58,7 +57,7 @@ namespace knockit
                 _waveInDevice = new WaveIn
                 {
                     DeviceNumber = _inputDeviceNo,
-                    WaveFormat = new WaveFormat(_recorder.SampleRate, 16, 1)
+                    WaveFormat = new WaveFormat(c_SampleRate, 16, 1)
                 };
                 _waveInDevice.StartRecording();
 
@@ -69,9 +68,7 @@ namespace knockit
             ISampleProvider sampleChannel = new SampleChannel(inputWaveform); //TODO: when we're not using recorder any more, this stay as a wave provider, I think
             _bandPassProvider = new BandPass2(sampleChannel);
             NotifyingSampleProvider sampleStream = new NotifyingSampleProvider(_bandPassProvider);
-            sampleStream.Sample += sampleStream_Sample; //TODO: want to get away from using the Recorder, really
-            _polygonSpectrumControl.Recorder = _recorder;
-            _recorder.NewPrimaryFrequencyEvent += RecorderNewPrimaryFrequencyEvent;
+            _polygonSpectrumControl.bp2 = _bandPassProvider;
 
             
             /* Output */
@@ -91,16 +88,6 @@ namespace knockit
             textBoxEpsilon.TextChanged += textBoxEpsilon_TextChanged;
 
             UpdateShit();
-        }
-
-        private void sampleStream_Sample(object sender, SampleEventArgs e)
-        {
-            _recorder.Update(e.Left);
-        }
-
-        void RecorderNewPrimaryFrequencyEvent(object sender, Recorder.NewPrimaryFrequencyEventArgs e)
-        {
-            label1.Content = e.PrimaryFrequency;
         }
 
         private void SliderMinFreqValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)

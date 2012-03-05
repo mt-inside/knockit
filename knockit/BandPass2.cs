@@ -4,8 +4,39 @@ using NAudio.Wave;
 
 namespace knockit
 {
+    public class NewFFTDataEventArgs : EventArgs
+    {
+        private readonly float[] _freqs;
+        private readonly float[] _mags;
+        private readonly int _len;
+
+        public NewFFTDataEventArgs(float[] freqs, float[] mags, int len)
+        {
+            _freqs = freqs;
+            _mags = mags;
+            _len = len;
+        }
+
+        public float[] Freqs
+        {
+            get { return _freqs; }
+        }
+
+        public float[] Mags
+        {
+            get { return _mags; }
+        }
+
+        public int Len
+        {
+            get { return _len; }
+        }
+    }
+
     internal class BandPass2 : ISampleProvider
     {
+        public event EventHandler<NewFFTDataEventArgs> NewFFTDataEvent;
+
         private readonly ISampleProvider _src;
 
         public BandPass2(ISampleProvider src)
@@ -18,7 +49,7 @@ namespace knockit
             _src.Read(buffer, offset, count);
 
             // TODO: monitor cpu usage and adjust 3rd parameter.
-            bandPass(count, 1024, 4, _src.WaveFormat.SampleRate, buffer, buffer);
+            BandPass(count, MAX_FRAME_LENGTH, 4, _src.WaveFormat.SampleRate, buffer, buffer);
 
             return count;
         }
@@ -40,14 +71,14 @@ namespace knockit
             set { _maxFreq = value; }
         }
 
-        private const int MAX_FRAME_LENGTH = 8192;
+        private const int MAX_FRAME_LENGTH = 1024;
 
         private float[] gInFIFO = new float[MAX_FRAME_LENGTH];
         private float[] gOutFIFO = new float[MAX_FRAME_LENGTH];
         private Complex[] gFFTworksp = new Complex[MAX_FRAME_LENGTH];
         private float[] gLastPhase = new float[MAX_FRAME_LENGTH / 2 + 1];
         private float[] gSumPhase = new float[MAX_FRAME_LENGTH / 2 + 1];
-        private float[] gOutputAccum = new float[2 * MAX_FRAME_LENGTH];
+        private float[] gOutputAccum = new float[2 * MAX_FRAME_LENGTH]; //extra length to accomodate in-place shift
         private float[] gAnaFreq = new float[MAX_FRAME_LENGTH];
         private float[] gAnaMagn = new float[MAX_FRAME_LENGTH];
         private float[] gSynFreq = new float[MAX_FRAME_LENGTH];
@@ -58,12 +89,12 @@ namespace knockit
         private int _maxFreq;
 
         ///<param name="numSampsToProcess">Length of indata</param>
-        ///<param name="fftFrameSize">Size of fft frame to use. Must be &lt; 8092 and MUST be integral power of 2</param>
+        ///<param name="fftFrameSize">Size of fft frame to use. Must be &lteq; MAX_FRAME_LENGTH and MUST be integral power of 2</param>
         ///<param name="osamp">Over-sampling factor. Should be at least 4, up to 32 for best quality</param>
         ///<param name="sampleRate">Sample rate in Hz of indata</param>
         ///<param name="indata">Input samples. Must be normalised to range [-1,1)</param>
         ///<param name="outdata">Output samples. Will be in range [-1,1). Can be same reference as indata for in-place transform</param>
-        private void bandPass(int numSampsToProcess, int fftFrameSize, int osamp, float sampleRate, float[] indata, float[] outdata)
+        private void BandPass(int numSampsToProcess, int fftFrameSize, int osamp, float sampleRate, float[] indata, float[] outdata)
         {
             double magn, phase, tmp, window, real, imag;
             double freqPerBin, expct;
@@ -90,7 +121,7 @@ namespace knockit
                 {
                     gRover = inFifoLatency;
 
-                    /* do windowing and re,im interleave */
+                    /* windowing */
                     for (k = 0; k < fftFrameSize; k++)
                     {
                         window = -.5 * Math.Cos(2.0 * Math.PI * (double)k / (double)fftFrameSize) + .5;
@@ -144,14 +175,15 @@ namespace knockit
                     Array.Clear(gSynFreq, 0, fftFrameSize);
                     for (k = 0; k <= fftFrameSize2; k++)
                     {
-                        /* Worringly, I have no idea why I have to /2 here */
-                        if (gAnaFreq[k] > _minFreq/2.0 && gAnaFreq[k] < _maxFreq/2.0 ||
-                            gAnaFreq[k] > _minFreq && gAnaFreq[k] < _maxFreq)
+                        if (gAnaFreq[k] > _minFreq && gAnaFreq[k] < _maxFreq ||
+                            gAnaFreq[k] > _minFreq * 2 && gAnaFreq[k] < _maxFreq * 2)
                         {
                             gSynMagn[k] = gAnaMagn[k];
                             gSynFreq[k] = gAnaFreq[k];
                         }
                     }
+
+                    Utils.RaiseEvent(NewFFTDataEvent, this, new NewFFTDataEventArgs(gSynFreq, gSynMagn, fftFrameSize));
 
                     /* ***************** SYNTHESIS ******************* */
                     /* this is the synthesis step */
@@ -182,8 +214,13 @@ namespace knockit
                         gFFTworksp[k].Y = (float)(magn * Math.Sin(phase));
                     }
 
+                    // TODO: not necc if the processing loop stops at fftsize/2 ?
                     /* zero negative frequencies */
-                    for (k = fftFrameSize2 + 1; k < fftFrameSize; k++) gFFTworksp[k].X = gFFTworksp[k].Y = 0.0f;
+                    for (k = fftFrameSize2 + 1; k < fftFrameSize; k++)
+                    {
+                        gFFTworksp[k].X = 0.0f;
+                        gFFTworksp[k].Y = 0.0f;
+                    }
 
                     /* do inverse transform */
                     FastFourierTransform.FFT(false, (int) Math.Log(fftFrameSize, 2), gFFTworksp);
