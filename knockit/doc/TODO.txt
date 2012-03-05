@@ -14,4 +14,4 @@ Ship it!
 - lic: infralution
 - install / update: clickonce
 - obfuscation: {SA}
-- web cart?
+- payment: stripe.com / cashflows.com / paypal
